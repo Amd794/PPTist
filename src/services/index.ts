@@ -1,8 +1,8 @@
 import axios from './config'
 
 // export const SERVER_URL = 'http://localhost:5000'
-export const SERVER_URL = (import.meta.env.MODE === 'development') ? '/api' : 'https://server.pptist.cn'
-export const ASSET_URL = 'https://asset.pptist.cn'
+export const SERVER_URL = (import.meta.env.MODE === 'development') ? '/api/v1/proxy/ppt_server' : 'https://api2.cmdragon.cn/api/v1/proxy/ppt_server'
+export const ASSET_URL = (import.meta.env.MODE === 'development') ? '/api/v1/proxy/ppt_asset' : 'https://api2.cmdragon.cn/api/v1/proxy/ppt_asset'
 
 export default {
   getMockData(filename: string): Promise<any> {
@@ -18,7 +18,7 @@ export default {
     language: string,
     model: string,
   ): Promise<any> {
-    return fetch(`${SERVER_URL}/tools/aippt_outline`, {
+    return fetch(`${SERVER_URL}/tools/aippt_outline?stream=true`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export default {
     language: string,
     model: string,
   ): Promise<any> {
-    return fetch(`${SERVER_URL}/tools/aippt`, {
+    return fetch(`${SERVER_URL}/tools/aippt?stream=true`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
