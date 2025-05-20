@@ -4,6 +4,7 @@
       <span class="title">AIPPT</span>
       <span class="subtite" v-if="step === 'template'">从下方挑选合适的模板，开始生成PPT</span>
       <span class="subtite" v-else-if="step === 'outline'">确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板</span>
+      <span class="subtite" v-else-if="step === 'manual-outline'">在下方输入您的PPT大纲内容</span>
       <span class="subtite" v-else>在下方输入您的PPT主题，并适当补充信息，如行业、岗位、学科、用途等</span>
     </div>
     
@@ -18,6 +19,7 @@
         <template #suffix>
           <span class="count">{{ keyword.length }} / 50</span>
           <span class="language" v-tooltip="'切换语言'" @click="language = language === 'zh' ? 'en' : 'zh'">{{ language === 'zh' ? '中' : '英' }}</span>
+          <div class="submit manual-btn" @click="step = 'manual-outline'">手动输入大纲</div>
           <div class="submit" type="primary" @click="createOutline()"><IconSend class="icon" /> AI 生成</div>
         </template>
       </Input>
@@ -35,8 +37,22 @@
             { label: 'GLM-4-Z1-Flash', value: 'GLM-4-Z1-Flash' },
           ]"
         />
+        <div class="more-models-btn" @click="goToMoreModels">更多AI模型</div>
       </div>
     </template>
+    
+    <template v-if="step === 'manual-outline'">
+      <textarea 
+        class="manual-textarea" 
+        v-model="manualOutline" 
+        placeholder="请输入您的大纲内容，支持Markdown格式..."
+      ></textarea>
+      <div class="btns">
+        <Button class="btn" type="primary" @click="useManualOutline()">使用此大纲</Button>
+        <Button class="btn" @click="step = 'setup'">返回</Button>
+      </div>
+    </template>
+    
     <div class="preview" v-if="step === 'outline'">
       <pre ref="outlineRef" v-if="outlineCreating">{{ outline }}</pre>
        <div class="outline-view" v-else>
@@ -90,12 +106,95 @@ const { AIPPT, getMdContent } = useAIPPT()
 const language = ref<'zh' | 'en'>('zh')
 const keyword = ref('')
 const outline = ref('')
+const manualOutline = ref(`
+# AI的出现对未来就业环境的影响
+
+## 就业结构转变
+
+###  新兴职业涌现
+
+####  AI相关领域
+-  AI算法工程师
+-  AI数据科学家
+-  AI伦理顾问
+####  衍生服务领域
+-  AI训练师
+-  AI产品经理
+-  AI内容创作者
+
+###  传统职业转型
+
+####  自动化替代
+-  制造业工人
+-  客服人员
+-  数据录入员
+####  技能升级
+-  医生借助AI辅助诊断
+-  教师利用AI个性化教学
+-  设计师使用AI提升设计效率
+
+
+##  就业技能需求变化
+
+###  技术能力
+
+####  编程与数据分析
+-  掌握Python、R等编程语言
+-  具备数据分析和处理能力
+
+####  AI工具使用
+-  熟练操作AI相关软件和平台
+
+###  软技能
+
+####  创造力与批判性思维
+-  提出创新性解决方案
+-  评估AI结果的可靠性
+
+####  沟通与协作
+-  跨领域沟通合作
+-  人机协同工作
+
+
+##  就业市场挑战
+
+###  技能差距
+
+####  人才供需失衡
+-  AI人才短缺
+-  传统行业人才技能过时
+
+###  公平与伦理
+
+####  算法歧视
+-  AI算法可能存在偏见
+####  就业机会分配
+-  AI带来的自动化可能加剧贫富差距
+
+
+##  应对策略
+
+###  个人层面
+
+####  持续学习
+-  学习新技能，适应新职业
+####  职业规划
+-  选择AI难以替代的职业方向
+
+###  社会层面
+
+####  教育改革
+-  培养适应未来需求的人才
+####  政策支持
+-  提供技能培训和就业指导
+-  建立健全的AI伦理规范
+`)
 const selectedTemplate = ref('template_1')
 const loading = ref(false)
 const outlineCreating = ref(false)
 const outlineRef = ref<HTMLElement>()
 const inputRef = ref<InstanceType<typeof Input>>()
-const step = ref<'setup' | 'outline' | 'template'>('setup')
+const step = ref<'setup' | 'outline' | 'template' | 'manual-outline'>('setup')
 const model = ref('doubao-1.5-pro-32k')
 
 const recommends = ref([
@@ -119,6 +218,16 @@ onMounted(() => {
 const setKeyword = (value: string) => {
   keyword.value = value
   inputRef.value!.focus()
+}
+
+const useManualOutline = () => {
+  if (!manualOutline.value.trim()) {
+    return message.error('请输入大纲内容')
+  }
+  
+  outline.value = manualOutline.value.trim()
+  step.value = 'outline'
+  outlineCreating.value = false
 }
 
 const createOutline = async () => {
@@ -188,6 +297,10 @@ const createPPT = async () => {
   }
   readStream()
 }
+
+const goToMoreModels = () => {
+  window.open('https://tools.cmdragon.cn/zh/apps/chat-mindmap', '_blank')
+}
 </script>
 
 <style lang="scss" scoped>
@@ -212,6 +325,16 @@ const createPPT = async () => {
     color: #888;
     font-size: 12px;
   }
+}
+.manual-textarea {
+  width: 100%;
+  height: 400px;
+  padding: 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: $borderRadius;
+  resize: none;
+  font-family: monospace;
+  margin-bottom: 15px;
 }
 .preview {
   pre {
@@ -276,6 +399,16 @@ const createPPT = async () => {
     }
   }
 }
+.btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .btn {
+    width: 120px;
+    margin: 0 5px;
+  }
+}
 .configs {
   margin-top: 5px;
   display: flex;
@@ -334,6 +467,7 @@ const createPPT = async () => {
   padding: 0 5px;
   border-radius: $borderRadius;
   cursor: pointer;
+  margin-left: 5px;
 
   &:hover {
     background-color: $themeHoverColor;
@@ -342,6 +476,27 @@ const createPPT = async () => {
   .icon {
     font-size: 15px;
     margin-right: 3px;
+  }
+  
+  &.manual-btn {
+    background-color: #67c23a;
+    
+    &:hover {
+      background-color: #85ce61;
+    }
+  }
+}
+.more-models-btn {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #fff;
+  background-color: #409eff;
+  padding: 2px 8px;
+  border-radius: $borderRadius;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #66b1ff;
   }
 }
 </style>
