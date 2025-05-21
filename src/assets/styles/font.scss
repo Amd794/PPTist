@@ -4,6 +4,6 @@ $fonts: 'SourceHanSans', 'SourceHanSerif', 'FangZhengHeiTi', 'FangZhengKaiTi', '
   @font-face {
     font-display: swap;
     font-family: $font;
-    src: url('https://api2.cmdragon.cn/api/api/v1/proxy/ppt_asset/font/#{$font}.woff2') format('woff2');
+    src: url('https://api2.cmdragon.cn/api/v1/proxy/ppt_asset/font/#{$font}.woff2') format('woff2');
   }
 }
